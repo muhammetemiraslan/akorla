@@ -3,7 +3,7 @@ window.AKORLA_CONFIG = {
   // Sitenin yayındaki tam adresi (sonunda / olsun). Google, paylaşım önizlemesi ve site haritası için gerekli.
   //   Kendi alan adın:        "https://akorla.com/"
   //   GitHub Pages (ücretsiz): "https://muhammetemiraslan.github.io/akorla/"
-  SITE_URL: "https://github.com/muhammetemiraslan/akorla/",
+  SITE_URL: "https://akorla.com/",
 
   SITE_NAME: "akorla",
 
