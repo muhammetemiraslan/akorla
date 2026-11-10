@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base href="./">
+<!--meta-->
+<title>akorla — Gitar Akorları ve Şarkı Sözleri</title>
+<meta name="description" content="Gitar akorları ve şarkı sözleri. Tek tıkla ton değiştir, otomatik kaydır, akor diyagramlarını gör.">
+<!--/meta-->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#d9481c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1e7;--paper:#fffdf8;--ink:#1d1a16;--muted:#776f63;--line:#e4dccd;
+  --accent:#d9481c;--accent-soft:#fbe3d8;--chord:#c13d12;--chip:#efe7d8;
+  --shadow:0 1px 2px rgba(40,30,10,.06),0 8px 24px -12px rgba(40,30,10,.18);
+}
+html.dark{
+  --bg:#15130f;--paper:#1e1b16;--ink:#f1eadc;--muted:#a39985;--line:#332e26;
+  --accent:#ff6a3a;--accent-soft:#3a2117;--chord:#ff8a5c;--chip:#2a261f;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.5;transition:background .2s,color .2s}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+h1,h2,h3,.brand{font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-.02em}
+
+/* header */
+header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.hbar{display:flex;align-items:center;gap:18px;height:64px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:22px}
+.brand svg{width:26px;height:26px}
+.brand small{font-family:Inter;font-weight:500;font-size:12px;color:var(--muted);letter-spacing:0;margin-left:2px}
+nav.main{display:flex;gap:4px}
+nav.main a{padding:7px 12px;border-radius:8px;font-weight:500;color:var(--muted)}
+nav.main a:hover,nav.main a.on{color:var(--ink);background:var(--chip)}
+.search{position:relative;flex:1;max-width:380px;margin-left:auto}
+.search input{width:100%;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:0 14px 0 38px;font:inherit;outline:none}
+.search input:focus{border-color:var(--accent)}
+.search>svg{position:absolute;left:12px;top:11px;width:18px;height:18px;color:var(--muted)}
+.drop{position:absolute;top:46px;left:0;right:0;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:none}
+.drop.show{display:block}
+.drop a{display:flex;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line)}
+.drop a:last-child{border:0}
+.drop a:hover,.drop a.sel{background:var(--chip)}
+.drop small{color:var(--muted)}
+.drop .empty{padding:14px;color:var(--muted)}
+.iconbtn{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;border:1px solid var(--line);background:var(--paper)}
+.iconbtn svg{width:18px;height:18px}
+
+/* home */
+.hero{padding:56px 0 40px;display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:center}
+.hero h1{font-size:clamp(36px,5.5vw,64px);line-height:1;font-weight:800}
+.hero h1 em{font-style:normal;color:var(--accent)}
+.hero p{color:var(--muted);font-size:17px;margin:18px 0 24px;max-width:460px}
+.stats{display:flex;gap:28px}
+.stats b{display:block;font-family:"Bricolage Grotesque";font-size:28px}
+.stats span{color:var(--muted);font-size:13px}
+.fretboard{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+.fretboard h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px}
+.fretboard .row{display:flex;gap:10px;flex-wrap:wrap}
+section.block{padding:28px 0}
+.shead{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px}
+.shead h2{font-size:26px}
+.shead a{color:var(--accent);font-weight:600;font-size:14px}
+.cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.cat{padding:7px 14px;border-radius:99px;background:var(--chip);font-weight:500;font-size:14px}
+.cat.on{background:var(--ink);color:var(--bg)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;gap:14px;align-items:center;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.rank{font-family:"Bricolage Grotesque";font-weight:800;font-size:28px;color:var(--line);min-width:32px}
+html.dark .rank{color:#4a4236}
+.card .t{font-weight:600}
+.card .a{color:var(--muted);font-size:13px}
+.keypill{margin-left:auto;font-family:"JetBrains Mono";font-size:12px;padding:3px 8px;border-radius:6px;background:var(--accent-soft);color:var(--chord);white-space:nowrap}
+.artists{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.artist{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center;transition:.15s}
+.artist:hover{border-color:var(--accent)}
+.avatar{width:64px;height:64px;border-radius:50%;margin:0 auto 10px;display:grid;place-items:center;font-family:"Bricolage Grotesque";font-weight:800;font-size:22px;color:#fff}
+.artist b{display:block}
+.artist small{color:var(--muted)}
+
+/* song page */
+.songhead{padding:32px 0 18px;display:flex;gap:20px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.crumb{color:var(--muted);font-size:13px;margin-bottom:8px}
+.crumb a:hover{color:var(--accent)}
+.songhead h1{font-size:clamp(30px,4.5vw,48px);line-height:1.05}
+.songhead h1 + a{color:var(--accent);font-weight:600;font-size:18px}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.meta span{background:var(--chip);border-radius:8px;padding:5px 10px;font-size:13px}
+.meta b{font-family:"JetBrains Mono"}
+.favbtn{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:1px solid var(--line);background:var(--paper);font-weight:600}
+.favbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.favbtn svg{width:18px;height:18px}
+.toolbar{position:sticky;top:64px;z-index:40;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;box-shadow:var(--shadow)}
+.tg{display:flex;align-items:center;gap:4px;padding:0 8px;border-right:1px solid var(--line)}
+.tg:last-child{border:0}
+.tg label{font-size:12px;color:var(--muted);margin-right:4px;text-transform:uppercase;letter-spacing:.05em}
+.tb{min-width:34px;height:34px;padding:0 10px;border-radius:8px;background:var(--chip);font-weight:600;display:grid;place-items:center}
+.tb:hover{background:var(--accent-soft);color:var(--chord)}
+.tb.on{background:var(--accent);color:#fff}
+.tv{font-family:"JetBrains Mono";min-width:38px;text-align:center;font-weight:700}
+.songlayout{display:grid;grid-template-columns:1fr 280px;gap:28px;padding:22px 0 80px}
+.sheet{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:28px 30px}
+.usedchords{display:flex;gap:8px;flex-wrap:wrap;padding-bottom:20px;margin-bottom:22px;border-bottom:1px dashed var(--line)}
+.lyrics{font-size:var(--fs,17px)}
+.sec{font-family:"Bricolage Grotesque";font-weight:700;font-size:.8em;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:22px 0 4px;display:flex;align-items:center;gap:8px}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec:first-child{margin-top:0}
+.ln{line-height:1.2;margin-bottom:8px}
+.ln.blank{height:10px}
+.w{display:inline-flex;flex-direction:column;white-space:pre;vertical-align:bottom}
+.ch{font-family:"JetBrains Mono";font-weight:700;color:var(--chord);font-size:.88em;min-height:1.35em;cursor:pointer;user-select:none}
+.ch:hover{text-decoration:underline}
+.chordsonly .ch{margin-right:1.2em;font-size:1em}
+.lyrics.nochords .ch{display:none}
+.side{display:flex;flex-direction:column;gap:16px}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px}
+.box h3{font-size:16px;margin-bottom:10px}
+.box ul{list-style:none}
+.box li a{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.box li:last-child a{border:0}
+.box li a:hover{color:var(--accent)}
+.strum{font-family:"JetBrains Mono";font-size:22px;letter-spacing:.15em;color:var(--chord)}
+.box p{color:var(--muted);font-size:13px}
+
+/* chord diagram */
+.cd{display:inline-flex;flex-direction:column;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 6px 2px;cursor:pointer}
+.cd b{font-family:"JetBrains Mono";font-size:13px;color:var(--chord)}
+.cd svg{display:block}
+.cd:hover{border-color:var(--accent)}
+.pop{position:fixed;z-index:100;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:8px;pointer-events:none;opacity:0;transition:opacity .12s}
+.pop.show{opacity:1}
+
+/* list pages */
+.pagehead{padding:36px 0 20px}
+.pagehead h1{font-size:40px}
+.pagehead p{color:var(--muted)}
+.az{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px}
+.az button{width:34px;height:34px;border-radius:8px;background:var(--chip);font-weight:600}
+.az button.on{background:var(--ink);color:var(--bg)}
+.az button:disabled{opacity:.3;cursor:default}
+.table{background:var(--paper);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.table a{display:grid;grid-template-columns:1fr 1fr 80px 80px;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:center}
+.table a:last-child{border:0}
+.table a:hover{background:var(--chip)}
+.table .th{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:grid;grid-template-columns:1fr 1fr 80px 80px;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line)}
+.diff{font-size:12px;font-weight:600}
+.diff.Kolay{color:#2f8a4a}.diff.Orta{color:#c58a10}.diff.Zor{color:#c13d12}
+.dict{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px}
+.dict .cd{padding:10px 6px 4px}
+.tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+
+footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:13px;margin-top:40px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+
+@media (max-width:860px){
+  nav.main{display:none}
+  .hero{grid-template-columns:1fr;padding-top:32px}
+  .songlayout{grid-template-columns:1fr}
+  .sheet{padding:20px 16px}
+  .tg{border:0;padding:0 4px}
+  .table a,.table .th{grid-template-columns:1fr 1fr 60px}
+  .table a>:nth-child(4),.table .th>:nth-child(4){display:none}
+  .mnav{display:flex!important}
+}
+.mnav{display:none;gap:4px;overflow-x:auto;padding:8px 0;border-top:1px solid var(--line)}
+.mnav a{padding:6px 12px;border-radius:8px;background:var(--chip);font-size:14px;white-space:nowrap}
+@media (max-width:520px){.brand small{display:none}.hbar{gap:10px}}
+.h1sub{font-size:.45em;color:var(--muted);font-weight:500;letter-spacing:0}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+.prose{max-width:760px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:28px 30px;margin-bottom:40px}
+.prose p,.prose ul{margin-bottom:14px}
+.prose ul{padding-left:22px}
+.prose li{margin-bottom:6px}
+.prose h2{font-size:20px;margin:24px 0 8px}
+.prose a{color:var(--accent);font-weight:600}
+.ltable{width:100%;border-collapse:collapse;margin:8px 0 16px;font-size:14px}
+.ltable th,.ltable td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+.ltable th{color:var(--muted);font-size:12px;text-transform:uppercase}
+.cform{display:flex;flex-direction:column;gap:14px;margin-top:22px;padding-top:22px;border-top:1px dashed var(--line)}
+.cform .r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cform label.f{display:flex;flex-direction:column;gap:5px;font-size:13px;font-weight:600;color:var(--muted)}
+.cform input,.cform select,.cform textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;outline:none;width:100%}
+.cform input:focus,.cform textarea:focus,.cform select:focus{border-color:var(--accent)}
+.chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted)}
+.chk input{width:auto!important;margin-top:3px}
+.hp{position:absolute;left:-9999px;height:0;overflow:hidden}
+.fmsg{font-size:14px;font-weight:600;min-height:20px}
+.fmsg.ok{color:#2f8a4a}.fmsg.bad{color:#c0362c}
+footer nav{display:flex;gap:14px;flex-wrap:wrap}
+footer nav a:hover{color:var(--accent)}
+#cookie{position:fixed;left:16px;right:16px;bottom:16px;z-index:80;max-width:560px;margin:0 auto;background:var(--ink);color:var(--bg);border-radius:14px;padding:14px 16px;display:none;gap:14px;align-items:center;box-shadow:var(--shadow);font-size:13px}
+#cookie.show{display:flex}
+#cookie a{text-decoration:underline}
+#cookie button{background:var(--accent);color:#fff;border-radius:9px;padding:8px 16px;font-weight:600;white-space:nowrap}
+@media (max-width:600px){.cform .r2{grid-template-columns:1fr}.prose{padding:20px 16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="hbar">
+      <a href="./" class="brand" aria-label="akorla ana sayfa">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2C9 2 4 5.5 4 10.5 4 18 11 26 16 30c5-4 12-12 12-19.5C28 5.5 23 2 16 2z" fill="var(--accent)"/><path d="M11 11h10M11 15h10M11 19h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        akorla<small>akor & söz</small>
+      </a>
+      <nav class="main" id="nav">
+        <a href="./" data-r="home">Ana Sayfa</a>
+        <a href="tum-sarkilar/" data-r="tumu">Tüm Şarkılar</a>
+        <a href="sanatcilar/" data-r="sanatcilar">Sanatçılar</a>
+        <a href="akor-sozlugu/" data-r="sozluk">Akor Sözlüğü</a>
+      </nav>
+      <div class="search" role="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" placeholder="Şarkı veya sanatçı ara…" autocomplete="off" aria-label="Ara">
+        <div class="drop" id="drop"></div>
+      </div>
+      <button class="iconbtn" id="theme" title="Tema değiştir" aria-label="Tema değiştir"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+    </div>
+    <div class="mnav">
+      <a href="./">Ana Sayfa</a><a href="tum-sarkilar/">Tüm Şarkılar</a><a href="sanatcilar/">Sanatçılar</a><a href="akor-sozlugu/">Akor Sözlüğü</a>
+    </div>
+  </div>
+</header>
+
+<main id="app"><!--app--><div class="wrap pagehead"><p>Yükleniyor…</p></div><!--/app--></main>
+<div class="pop" id="pop"></div>
+
+<footer>
+  <div class="wrap">
+    <div><b class="brand" style="font-size:16px;color:var(--ink)">akorla</b> — gitar akorları ve şarkı sözleri. Sözler ve besteler hak sahiplerine aittir.</div>
+    <nav>
+      <a href="iletisim/">İletişim</a>
+      <a href="telif/">Telif / Kaldırma Talebi</a>
+      <a href="gizlilik/">Gizlilik ve KVKK</a>
+      <a href="cerez/">Çerez Politikası</a>
+      <a href="admin.html" rel="nofollow">Yönetim</a>
+    </nav>
+  </div>
+</footer>
+
+<div id="cookie" role="dialog" aria-label="Çerez bildirimi">
+  <span>akorla takip ya da reklam çerezi kullanmaz. Tema ve favori tercihlerin sadece tarayıcında saklanır. <a href="cerez/">Ayrıntılar</a></span>
+  <button id="cookieok">Tamam</button>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data.js"></script>
+<script src="chords.js"></script>
+<script src="views.js"></script>
+<script src="db.js"></script>
+<script>
+let D={artists:[],songs:[]},loaded=false;
+const C=window.AKORLA_CONFIG||{};
+const store={
+  get(k,d){try{const v=localStorage.getItem("akorla_"+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem("akorla_"+k,JSON.stringify(v))}catch(e){}}
+};
+let favs=store.get("favs",[]);
+let st={tr:0,fs:17,scroll:0,showChords:true};
+let scrollRAF=null,acc=0;
+const $=s=>document.querySelector(s);
+const artistOf=id=>D.artists.find(a=>a.id===id)||{name:""};
+
+/* ---------- TEMA & ÇEREZ ---------- */
+if(store.get("dark",false)) document.documentElement.classList.add("dark");
+$("#theme").onclick=()=>{const d=document.documentElement.classList.toggle("dark");store.set("dark",d)};
+if(!store.get("cookieok",false)) $("#cookie").classList.add("show");
+$("#cookieok").onclick=()=>{store.set("cookieok",true);$("#cookie").classList.remove("show")};
+
+/* ---------- ROUTER (gerçek adresler) ---------- */
+const BASEPATH=new URL(document.baseURI).pathname;
+let VPATH=null; // pushState kullanılamazsa (file://) sanal adres
+function curPath(){
+  let p=VPATH!==null?VPATH:decodeURIComponent(location.pathname);
+  p=p.startsWith(BASEPATH)?p.slice(BASEPATH.length):p.replace(/^\//,"");
+  return p.replace(/(^|\/)index\.html$/,"").replace(/\/+$/,"");
+}
+// eski #sarki-xxx linklerini yeni adrese çevir
+(function(){
+  const h=location.hash.slice(1);let m;
+  if((m=h.match(/^sarki-(.+)$/))) history.replaceState(null,"",new URL("sarki/"+m[1]+"/",document.baseURI));
+  else if((m=h.match(/^sanatci-(.+)$/))) history.replaceState(null,"",new URL("sanatci/"+m[1]+"/",document.baseURI));
+})();
+
+function setMeta(v){
+  document.title=v.title;
+  let d=document.querySelector('meta[name="description"]');
+  if(!d){d=document.createElement("meta");d.name="description";document.head.appendChild(d)}
+  d.content=v.desc||"";
+  const can=document.querySelector('link[rel="canonical"]');
+  if(can) can.href=location.origin+location.pathname;
+}
+
+function render(scrollTop=true){
+  cancelAnimationFrame(scrollRAF);st.scroll=0;
+  const q=Object.fromEntries(new URLSearchParams(location.search));
+  const v=V.resolve(D,curPath(),{type:q.tur,song:q.sarki});
+  $("#app").innerHTML=v.html;
+  setMeta(v);
+  document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("on",a.dataset.r===v.r));
+  ({home:bindHome,song:()=>bindSong(v.song),tumu:bindAll,sozluk:bindDict,legal:bindForm})[v.r]?.();
+  if(scrollTop) window.scrollTo(0,0);
+  $("#drop").classList.remove("show");
+}
+function go(href){
+  const u=new URL(href,document.baseURI);
+  if(!loaded){location.href=u.href;return}
+  try{ if(u.href!==location.href) history.pushState(null,"",u.href); VPATH=null; }
+  catch(e){ VPATH=decodeURIComponent(u.pathname); }
+  render();
+}
+document.addEventListener("click",e=>{
+  const a=e.target.closest("a[href]");
+  if(!a||e.defaultPrevented||e.button||e.metaKey||e.ctrlKey||e.shiftKey||a.target||a.hasAttribute("download")) return;
+  const u=new URL(a.href);
+  if((u.origin!==location.origin&&location.protocol!=="file:")||!u.pathname.startsWith(BASEPATH)||/\.(html|xml|txt|png|svg|js)$/.test(u.pathname)) return;
+  e.preventDefault();go(u.href);
+});
+window.addEventListener("popstate",()=>render(false));
+
+/* ---------- SAYFA BAĞLAMALARI ---------- */
+function bindHome(){
+  $("#favs").innerHTML=V.favs(D,favs);
+  $("#cats").onclick=e=>{
+    const b=e.target.closest(".cat"); if(!b) return;
+    document.querySelectorAll("#cats .cat").forEach(x=>x.classList.toggle("on",x===b));
+    $("#popgrid").innerHTML=V.popGrid(D,b.dataset.g);
+  };
+}
+function bindAll(){
+  document.querySelector(".az").onclick=e=>{
+    const b=e.target.closest("button");if(!b||b.disabled)return;
+    document.querySelectorAll(".az button").forEach(x=>x.classList.toggle("on",x===b));
+    $("#tlist").innerHTML=V.allSongs(D,b.dataset.l||null).list();
+  };
+}
+function bindDict(){
+  document.querySelector(".tabs").onclick=e=>{
+    const b=e.target.closest(".cat");if(!b)return;
+    document.querySelectorAll(".tabs .cat").forEach(x=>x.classList.toggle("on",x===b));
+    $("#dict").innerHTML=V.dictGrid(b.dataset.g);
+  };
+}
+function bindForm(){
+  const f=$("#cform");if(!f)return;
+  f.onsubmit=async e=>{
+    e.preventDefault();
+    const fd=Object.fromEntries(new FormData(f));
+    const msg=$("#fmsg");msg.className="fmsg";
+    if(fd.website) return; // bot
+    try{const last=+sessionStorage.getItem("akorla_msg")||0;if(Date.now()-last<30000){msg.className="fmsg bad";msg.textContent="Biraz bekleyip tekrar dene.";return}}catch(_){}
+    const btn=f.querySelector("button[type=submit]");btn.disabled=true;msg.textContent="Gönderiliyor…";
+    try{
+      await DB.sendMessage({type:fd.type||"iletisim",name:fd.name.trim(),email:fd.email.trim(),subject:(fd.subject||"").trim()||null,song_url:(fd.song_url||"").trim()||null,body:fd.body.trim()});
+      try{sessionStorage.setItem("akorla_msg",Date.now())}catch(_){}
+      f.reset();msg.className="fmsg ok";msg.textContent=fd.type==="telif"?"Talebiniz alındı, en kısa sürede incelenecek.":"Mesajın ulaştı, teşekkürler!";
+    }catch(err){console.error(err);msg.className="fmsg bad";msg.textContent="Gönderilemedi, lütfen tekrar dene."}
+    btn.disabled=false;
+  };
+}
+
+function bindSong(s){
+  st.tr=0;
+  const draw=()=>{
+    const {html,used}=renderLyrics(s.body||"",st.tr);
+    $("#lyr").innerHTML=html;
+    $("#lyr").style.setProperty("--fs",st.fs+"px");
+    $("#lyr").classList.toggle("nochords",!st.showChords);
+    $("#used").innerHTML=used.map(c=>chordCard(c)).join("");
+    $("#trv").textContent=(st.tr>0?"+":"")+st.tr;
+    $("#mkey").textContent=transposeChord(s.key,st.tr);
+  };
+  draw();
+  const setTr=v=>{st.tr=((v%12)+12)%12;if(st.tr>6)st.tr-=12;draw()};
+  $("#tru").onclick=()=>setTr(st.tr+1);
+  $("#trd").onclick=()=>setTr(st.tr-1);
+  $("#trr").onclick=()=>{st.tr=0;draw()};
+  $("#fsu").onclick=()=>{st.fs=Math.min(28,st.fs+1);draw()};
+  $("#fsd").onclick=()=>{st.fs=Math.max(12,st.fs-1);draw()};
+  $("#tch").classList.toggle("on",st.showChords);
+  $("#tch").onclick=e=>{st.showChords=!st.showChords;e.currentTarget.classList.toggle("on",st.showChords);draw()};
+  const setSc=v=>{st.scroll=Math.max(0,Math.min(5,v));$("#scv").textContent=st.scroll;runScroll()};
+  $("#scu").onclick=()=>setSc(st.scroll+1);
+  $("#scd").onclick=()=>setSc(st.scroll-1);
+  const fb=$("#fav");
+  const paintFav=()=>{const on=favs.includes(s.id);fb.classList.toggle("on",on);fb.querySelector("span").textContent=on?"Favorilerde":"Favorilere ekle"};
+  paintFav();
+  fb.onclick=()=>{favs=favs.includes(s.id)?favs.filter(x=>x!==s.id):[...favs,s.id];store.set("favs",favs);paintFav()};
+  // görüntülenme sayacı (oturum başına 1)
+  let seen=false;try{seen=sessionStorage.getItem("akorla_v_"+s.id)}catch(e){}
+  if(!seen){
+    DB.incrementView(s.id).then(()=>{
+      try{sessionStorage.setItem("akorla_v_"+s.id,"1")}catch(e){}
+      s.views=(+s.views||0)+1;const mv=$("#mviews");if(mv)mv.textContent=V.fmt(s.views);
+    }).catch(e=>console.warn("sayaç",e));
+  }
+}
+function runScroll(){
+  cancelAnimationFrame(scrollRAF);acc=0;
+  if(!st.scroll) return;
+  let last=performance.now();
+  const step=t=>{
+    const dt=t-last;last=t;
+    acc+=st.scroll*dt*0.012;
+    if(acc>=1){const px=Math.floor(acc);window.scrollBy(0,px);acc-=px}
+    if(window.innerHeight+window.scrollY>=document.body.scrollHeight-2){st.scroll=0;const v=$("#scv");if(v)v.textContent=0;return}
+    scrollRAF=requestAnimationFrame(step);
+  };
+  scrollRAF=requestAnimationFrame(step);
+}
+
+/* ---------- ARAMA ---------- */
+const norm=s=>String(s||"").toLocaleLowerCase("tr").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ı/g,"i");
+let sel=-1;
+$("#q").addEventListener("input",e=>{
+  const v=norm(e.target.value.trim());
+  const d=$("#drop");sel=-1;
+  if(!v){d.classList.remove("show");return}
+  const ar=D.artists.filter(a=>norm(a.name).includes(v)).map(a=>`<a href="${V.artistUrl(a.id)}"><span>${esc(a.name)}</span><small>Sanatçı</small></a>`);
+  const so=D.songs.filter(s=>norm(s.title).includes(v)||norm(artistOf(s.artist).name).includes(v)).slice(0,6).map(s=>`<a href="${V.songUrl(s.id)}"><span>${esc(s.title)}</span><small>${esc(artistOf(s.artist).name)}</small></a>`);
+  const all=[...ar,...so];
+  d.innerHTML=all.length?all.join(""):`<div class="empty">Sonuç yok</div>`;
+  d.classList.add("show");
+});
+$("#q").addEventListener("keydown",e=>{
+  const items=[...document.querySelectorAll("#drop a")];
+  if(!items.length) return;
+  if(e.key==="ArrowDown"){sel=Math.min(items.length-1,sel+1);e.preventDefault()}
+  else if(e.key==="ArrowUp"){sel=Math.max(0,sel-1);e.preventDefault()}
+  else if(e.key==="Enter"){go(items[Math.max(0,sel)].getAttribute("href"));$("#q").value="";$("#q").blur();return}
+  else if(e.key==="Escape"){$("#drop").classList.remove("show");return}
+  items.forEach((a,i)=>a.classList.toggle("sel",i===sel));
+});
+document.addEventListener("click",e=>{if(!e.target.closest(".search")) $("#drop").classList.remove("show"); else if(e.target.closest("#drop a")) $("#q").value=""});
+
+/* ---------- AKOR BALONCUĞU ---------- */
+const pop=$("#pop");
+function showPop(el){
+  const c=el.dataset.c; if(!c) return;
+  pop.innerHTML=chordCard(c,1.4);
+  const r=el.getBoundingClientRect();
+  pop.classList.add("show");
+  const pw=pop.offsetWidth,ph=pop.offsetHeight;
+  let x=r.left+r.width/2-pw/2, y=r.top-ph-8;
+  if(y<70) y=r.bottom+8;
+  x=Math.max(8,Math.min(innerWidth-pw-8,x));
+  pop.style.left=x+"px";pop.style.top=y+"px";
+}
+document.addEventListener("mouseover",e=>{const el=e.target.closest(".lyrics .ch[data-c]");if(el)showPop(el)});
+document.addEventListener("mouseout",e=>{if(e.target.closest(".lyrics .ch[data-c]"))pop.classList.remove("show")});
+document.addEventListener("click",e=>{const el=e.target.closest(".lyrics .ch[data-c]");if(el){showPop(el);setTimeout(()=>pop.classList.remove("show"),2200)}});
+window.addEventListener("scroll",()=>pop.classList.remove("show"),{passive:true});
+
+/* ---------- BAŞLAT ---------- */
+function fail(t,d){ if(!document.querySelector("#app .wrap h1")) $("#app").innerHTML=`<div class="wrap pagehead"><h1>${t}</h1><p>${d}</p></div>`; }
+if(typeof DB==="undefined"||typeof V==="undefined"||typeof renderLyrics!=="function"){
+  fail("Site dosyaları yüklenemedi","config.js, chords.js, views.js ve db.js index.html ile aynı klasörde olmalı.");
+  throw new Error("akorla: dosyalar eksik");
+}
+const loadTimer=setTimeout(()=>{ if(!loaded) fail("Bağlantı yavaş","Veriler gelmedi, sayfayı yenilemeyi dene."); },10000);
+DB.load().then(d=>{clearTimeout(loadTimer);D=d;loaded=true;render(false)}).catch(e=>{
+  console.error(e);
+  if(DB.mode==="local"){D={artists:DEFAULT_ARTISTS,songs:DEFAULT_SONGS};loaded=true;render(false)}
+  else fail("Bağlantı hatası","Veriler yüklenemedi, sayfayı yenilemeyi dene.");
+});
+</script>
+</body>
+</html>

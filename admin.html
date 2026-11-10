@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Akorla — Admin Paneli</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f1e7;--paper:#fffdf8;--ink:#1d1a16;--muted:#776f63;--line:#e4dccd;--accent:#d9481c;--accent-soft:#fbe3d8;--chord:#c13d12;--chip:#efe7d8;--ok:#2f8a4a;--danger:#c0362c;--shadow:0 1px 2px rgba(40,30,10,.06),0 8px 24px -12px rgba(40,30,10,.18)}
+html.dark{--bg:#15130f;--paper:#1e1b16;--ink:#f1eadc;--muted:#a39985;--line:#332e26;--accent:#ff6a3a;--accent-soft:#3a2117;--chord:#ff8a5c;--chip:#2a261f;--shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14px;line-height:1.5}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+h1,h2,h3,.brand{font-family:"Bricolage Grotesque",sans-serif;letter-spacing:-.02em}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:9px 11px;outline:none;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+input[type=color]{padding:3px;height:40px}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:600;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 15px;border-radius:9px;background:var(--chip);font-weight:600;white-space:nowrap}
+.btn:hover{filter:brightness(.96)}
+.btn.pri{background:var(--accent);color:#fff}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid var(--line)}
+.btn.sm{height:30px;padding:0 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:default}
+
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.lbox{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:32px;width:100%;max-width:380px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px}
+.lbox h1{font-size:26px}
+.lbox p{color:var(--muted);font-size:13px}
+.err{color:var(--danger);font-size:13px;min-height:18px}
+
+/* layout */
+#app{display:none;min-height:100vh;grid-template-columns:230px 1fr}
+#app.show{display:grid}
+aside{background:var(--paper);border-right:1px solid var(--line);padding:20px 14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:21px;padding:0 8px 16px}
+.brand svg{width:24px;height:24px}
+.brand small{font-family:Inter;font-size:11px;font-weight:600;background:var(--ink);color:var(--bg);padding:2px 6px;border-radius:5px;letter-spacing:0}
+aside a.nv{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:9px;font-weight:500;color:var(--muted)}
+aside a.nv svg{width:17px;height:17px}
+aside a.nv:hover{background:var(--chip);color:var(--ink)}
+aside a.nv.on{background:var(--accent-soft);color:var(--chord)}
+.asfoot{margin-top:auto;display:flex;flex-direction:column;gap:8px}
+.mode{font-size:12px;padding:8px 10px;border-radius:9px;background:var(--chip);color:var(--muted)}
+.mode b{color:var(--ink)}
+main{padding:28px 32px 80px;min-width:0}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px;flex-wrap:wrap}
+.top h1{font-size:30px}
+.top .sub{color:var(--muted)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:24px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px}
+.stat span{color:var(--muted);font-size:13px}
+.stat b{display:block;font-family:"Bricolage Grotesque";font-size:32px;line-height:1.1;margin-top:4px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.panel h3{padding:14px 18px;border-bottom:1px solid var(--line);font-size:16px}
+.filters{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.filters input{max-width:300px}
+.filters select{max-width:180px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:10px 14px;border-bottom:1px solid var(--line);font-weight:600}
+td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border:0}
+tbody tr:hover{background:var(--chip)}
+td.act{text-align:right;white-space:nowrap}
+.kp{font-family:"JetBrains Mono";font-size:12px;padding:2px 7px;border-radius:6px;background:var(--accent-soft);color:var(--chord)}
+.diff{font-size:12px;font-weight:600}.diff.Kolay{color:#2f8a4a}.diff.Orta{color:#c58a10}.diff.Zor{color:#c13d12}
+.av{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;color:#fff;font-weight:800;font-family:"Bricolage Grotesque";font-size:13px;vertical-align:middle;margin-right:10px}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+
+/* editor */
+.ed{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.form{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.row{display:grid;gap:12px}
+.r2{grid-template-columns:1fr 1fr}.r3{grid-template-columns:1fr 1fr 1fr}.r4{grid-template-columns:repeat(4,1fr)}
+.helper{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.helper .lb{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-right:4px}
+.hb{height:28px;padding:0 9px;border-radius:7px;background:var(--chip);font-size:12px;font-weight:600}
+.hb.c{font-family:"JetBrains Mono";color:var(--chord)}
+.hb:hover{background:var(--accent-soft)}
+textarea.body{font-family:"JetBrains Mono";font-size:13px;min-height:380px;line-height:1.6;resize:vertical}
+.warn{font-size:12px;color:#b07a00;background:#fff4d6;border-radius:8px;padding:8px 10px;display:none}
+html.dark .warn{background:#3a2f12;color:#f0c566}
+.warn.show{display:block}
+.prev{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:22px;position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto}
+.prev .ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.prev .ph span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.prev h2{font-size:26px;line-height:1.1}
+.prev .pa{color:var(--accent);font-weight:600;margin-bottom:14px}
+.used{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:14px;margin-bottom:14px;border-bottom:1px dashed var(--line)}
+.cd{display:inline-flex;flex-direction:column;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 6px 2px}
+.cd b{font-family:"JetBrains Mono";font-size:12px;color:var(--chord)}
+.lyrics{font-size:15px}
+.sec{font-family:"Bricolage Grotesque";font-weight:700;font-size:.8em;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 4px;display:flex;align-items:center;gap:8px}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec:first-child{margin-top:0}
+.ln{line-height:1.2;margin-bottom:7px}.ln.blank{height:8px}
+.w{display:inline-flex;flex-direction:column;white-space:pre;vertical-align:bottom}
+.ch{font-family:"JetBrains Mono";font-weight:700;color:var(--chord);font-size:.88em;min-height:1.35em}
+.chordsonly .ch{margin-right:1.2em}
+
+/* modal / toast */
+.ov{position:fixed;inset:0;background:rgba(20,15,10,.45);display:none;place-items:center;z-index:100;padding:20px}
+.ov.show{display:grid}
+.modal{background:var(--paper);border-radius:16px;padding:24px;width:100%;max-width:440px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.modal.wide{max-width:640px}
+.modal h3{font-size:20px}
+.modal p{color:var(--muted)}
+.mact{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:10px;font-weight:600;opacity:0;transition:.2s;z-index:200;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%)}
+#toast.bad{background:var(--danger);color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px}
+.card h3{font-size:17px}
+.card p{color:var(--muted);font-size:13px;flex:1}
+.card .acts{display:flex;gap:8px;flex-wrap:wrap}
+.mobtop{display:none}
+.badge{margin-left:auto;background:var(--accent);color:#fff;border-radius:99px;font-size:11px;font-weight:700;padding:1px 7px;display:none}
+.badge.show{display:inline-block}
+.msg{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:10px}
+.msg.unread{border-left:4px solid var(--accent)}
+.msg .mh{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.msg .mh small{color:var(--muted)}
+.msg .tag{font-size:11px;font-weight:700;text-transform:uppercase;padding:2px 8px;border-radius:6px;background:var(--chip)}
+.msg .tag.telif{background:#fde2df;color:#b42318}
+html.dark .msg .tag.telif{background:#4a1d19;color:#ff9b8f}
+.msg .mb{white-space:pre-wrap;margin:8px 0}
+.msg .acts{display:flex;gap:6px;flex-wrap:wrap}
+
+@media (max-width:1000px){.ed{grid-template-columns:1fr}.prev{position:static;max-height:none}}
+@media (max-width:760px){
+  #app.show{display:block}
+  aside{position:fixed;inset:0 auto 0 0;width:240px;z-index:90;transform:translateX(-100%);transition:.2s;box-shadow:var(--shadow)}
+  aside.open{transform:none}
+  main{padding:16px 14px 60px}
+  .mobtop{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .r3,.r4{grid-template-columns:1fr 1fr}
+  td:nth-child(4),th:nth-child(4),td:nth-child(5),th:nth-child(5){display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <form class="lbox" id="lform">
+    <div class="brand" style="padding:0">
+      <svg viewBox="0 0 32 32"><path d="M16 2C9 2 4 5.5 4 10.5 4 18 11 26 16 30c5-4 12-12 12-19.5C28 5.5 23 2 16 2z" fill="var(--accent)"/><path d="M11 11h10M11 15h10M11 19h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      akorla <small>ADMIN</small>
+    </div>
+    <h1>Giriş yap</h1>
+    <p id="lhint"></p>
+    <label class="f" id="lemail" style="display:none">E-posta<input type="email" id="em" autocomplete="username"></label>
+    <label class="f">Şifre<input type="password" id="pw" autocomplete="current-password" required></label>
+    <div class="err" id="lerr"></div>
+    <button class="btn pri" style="justify-content:center">Giriş</button>
+    <a href="./" style="text-align:center;color:var(--muted);font-size:13px">← Siteye dön</a>
+  </form>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside id="side">
+    <div class="brand">
+      <svg viewBox="0 0 32 32"><path d="M16 2C9 2 4 5.5 4 10.5 4 18 11 26 16 30c5-4 12-12 12-19.5C28 5.5 23 2 16 2z" fill="var(--accent)"/><path d="M11 11h10M11 15h10M11 19h6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+      akorla <small>ADMIN</small>
+    </div>
+    <a class="nv" href="#ozet" data-r="ozet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Özet</a>
+    <a class="nv" href="#sarkilar" data-r="sarkilar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>Şarkılar</a>
+    <a class="nv" href="#sanatcilar" data-r="sanatcilar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Sanatçılar</a>
+    <a class="nv" href="#mesajlar" data-r="mesajlar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Mesajlar <span class="badge" id="badge"></span></a>
+    <a class="nv" href="#yedek" data-r="yedek"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 17v3h16v-3"/></svg>Yedekleme</a>
+    <a class="nv" href="./" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></svg>Siteyi aç</a>
+    <div class="asfoot">
+      <div class="mode" id="mode"></div>
+      <button class="btn sm" id="theme">Tema değiştir</button>
+      <button class="btn sm danger" id="logout">Çıkış yap</button>
+    </div>
+  </aside>
+  <main>
+    <div class="mobtop"><button class="btn sm" id="menu">☰ Menü</button></div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<div class="ov" id="ov"><div class="modal" id="modal"></div></div>
+<div id="toast"></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data.js"></script>
+<script src="chords.js"></script>
+<script src="db.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const fmt=n=>(+n||0).toLocaleString("tr-TR");
+const initials=n=>n.split(" ").map(w=>w[0]).join("").slice(0,2);
+const trSort=(a,b)=>a.localeCompare(b,"tr");
+let D={artists:[],songs:[]};
+const artistName=id=>(D.artists.find(a=>a.id===id)||{name:"(silinmiş)"}).name;
+const DIFFS=["Kolay","Orta","Zor"];
+const KEYS=[];NOTES.forEach(n=>{KEYS.push(n);KEYS.push(n+"m")});
+const QUICK=["Am","C","D","Dm","E","Em","F","G","A","B7","Bm","E7","A7","F#m"];
+const SECTIONS=["Giriş","1. Kıta","2. Kıta","Nakarat","Köprü","Solo","Final"];
+
+/* theme */
+try{if(localStorage.getItem("akorla_dark")==="true")document.documentElement.classList.add("dark")}catch(e){}
+$("#theme").onclick=()=>{const d=document.documentElement.classList.toggle("dark");try{localStorage.setItem("akorla_dark",JSON.stringify(d))}catch(e){}};
+
+/* toast & modal */
+let tt;
+function toast(msg,bad){const t=$("#toast");t.textContent=msg;t.className="show"+(bad?" bad":"");clearTimeout(tt);tt=setTimeout(()=>t.className="",2400)}
+function openModal(html,wide){$("#modal").className="modal"+(wide?" wide":"");$("#modal").innerHTML=html;$("#ov").classList.add("show")}
+function closeModal(){$("#ov").classList.remove("show")}
+$("#ov").onclick=e=>{if(e.target.id==="ov")closeModal()};
+function ask(title,text,okLabel="Sil"){
+  return new Promise(res=>{
+    openModal(`<h3>${title}</h3><p>${text}</p><div class="mact"><button class="btn" id="mno">Vazgeç</button><button class="btn pri" id="myes" style="background:var(--danger)">${okLabel}</button></div>`);
+    $("#mno").onclick=()=>{closeModal();res(false)};
+    $("#myes").onclick=()=>{closeModal();res(true)};
+  });
+}
+async function run(fn,okMsg){try{await fn();await reload();if(okMsg)toast(okMsg);return true}catch(e){console.error(e);toast(e.message||"Hata oluştu",true);return false}}
+async function reload(){D=await DB.load()}
+
+/* ---------- LOGIN ---------- */
+if(DB.mode==="supabase"){$("#lemail").style.display="";$("#lhint").textContent="Supabase hesabınla giriş yap."}
+else $("#lhint").textContent="Yerel mod · şifre config.js içinde (varsayılan: akorla123)";
+$("#lform").onsubmit=async e=>{
+  e.preventDefault();$("#lerr").textContent="";
+  try{await DB.login($("#em").value.trim(),$("#pw").value);start()}
+  catch(err){$("#lerr").textContent=err.message}
+};
+$("#logout").onclick=async()=>{await DB.logout();location.hash="";location.reload()};
+$("#menu").onclick=()=>$("#side").classList.toggle("open");
+
+async function start(){
+  try{await reload()}catch(e){toast("Veri yüklenemedi: "+e.message,true)}
+  $("#login").style.display="none";$("#app").classList.add("show");
+  $("#mode").innerHTML=DB.mode==="supabase"?"Mod: <b>Supabase</b><br>Değişiklikler herkese yansır.":"Mod: <b>Yerel</b><br>Veriler bu tarayıcıda.";
+  route();
+  refreshBadge();
+}
+DB.isLogged().then(ok=>{if(ok)start()});
+
+/* ---------- ROUTER ---------- */
+function route(){
+  const h=location.hash.slice(1)||"ozet";
+  $("#side").classList.remove("open");
+  let r=h;
+  if(h==="yeni")editor(null),r="sarkilar";
+  else if(h.startsWith("duzenle-"))editor(h.slice(8)),r="sarkilar";
+  else if(h==="sarkilar")songsView();
+  else if(h==="sanatcilar")artistsView();
+  else if(h==="yedek")backupView();
+  else if(h==="mesajlar")messagesView();
+  else overview(),r="ozet";
+  document.querySelectorAll("a.nv").forEach(a=>a.classList.toggle("on",a.dataset.r===r));
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",()=>{if($("#app").classList.contains("show"))route()});
+
+/* ---------- OVERVIEW ---------- */
+function overview(){
+  const total=D.songs.reduce((t,s)=>t+(+s.views||0),0);
+  const recent=[...D.songs].sort((a,b)=>(b.added||"").localeCompare(a.added||"")).slice(0,6);
+  const top=[...D.songs].sort((a,b)=>b.views-a.views).slice(0,6);
+  const bad=D.songs.filter(s=>unknownChords(s.body).length);
+  $("#view").innerHTML=`
+  <div class="top"><div><h1>Özet</h1><div class="sub">Hoş geldin 👋</div></div><a class="btn pri" href="#yeni">+ Yeni şarkı</a></div>
+  <div class="stats">
+    <div class="stat"><span>Şarkı</span><b>${D.songs.length}</b></div>
+    <div class="stat"><span>Sanatçı</span><b>${D.artists.length}</b></div>
+    <div class="stat"><span>Toplam görüntülenme</span><b>${fmt(total)}</b></div>
+    <div class="stat"><span>Diyagramı eksik akorlu şarkı</span><b style="color:${bad.length?"#c58a10":"inherit"}">${bad.length}</b></div>
+  </div>
+  <div class="cards">
+    <div class="panel"><h3>Son eklenenler</h3>${miniTable(recent)}</div>
+    <div class="panel"><h3>En çok bakılanlar</h3>${miniTable(top,true)}</div>
+  </div>`;
+}
+function miniTable(list,views){
+  if(!list.length) return `<div class="empty">Henüz şarkı yok</div>`;
+  return `<table><tbody>${list.map(s=>`<tr style="cursor:pointer" onclick="location.hash='duzenle-${s.id}'"><td><b>${esc(s.title)}</b><br><span style="color:var(--muted);font-size:12px">${esc(artistName(s.artist))}</span></td><td class="act">${views?fmt(s.views):esc(s.added||"")}</td></tr>`).join("")}</tbody></table>`;
+}
+
+/* ---------- SONGS ---------- */
+function songsView(){
+  const genres=[...new Set(D.songs.map(s=>s.genre).filter(Boolean))].sort(trSort);
+  $("#view").innerHTML=`
+  <div class="top"><div><h1>Şarkılar</h1><div class="sub">${D.songs.length} şarkı</div></div><a class="btn pri" href="#yeni">+ Yeni şarkı</a></div>
+  <div class="filters">
+    <input id="fq" placeholder="Şarkı veya sanatçı ara…">
+    <select id="fa"><option value="">Tüm sanatçılar</option>${[...D.artists].sort((a,b)=>trSort(a.name,b.name)).map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("")}</select>
+    <select id="fg"><option value="">Tüm türler</option>${genres.map(g=>`<option>${esc(g)}</option>`).join("")}</select>
+    <select id="fs"><option value="az">A → Z</option><option value="new">En yeni</option><option value="views">En çok bakılan</option></select>
+  </div>
+  <div class="panel"><table><thead><tr><th>Şarkı</th><th>Sanatçı</th><th>Ton</th><th>Seviye</th><th>Görüntülenme</th><th></th></tr></thead><tbody id="tb"></tbody></table></div>`;
+  const norm=s=>(s||"").toLocaleLowerCase("tr");
+  const draw=()=>{
+    const q=norm($("#fq").value),a=$("#fa").value,g=$("#fg").value,so=$("#fs").value;
+    let l=D.songs.filter(s=>(!q||norm(s.title).includes(q)||norm(artistName(s.artist)).includes(q))&&(!a||s.artist===a)&&(!g||s.genre===g));
+    l.sort(so==="az"?(x,y)=>trSort(x.title,y.title):so==="new"?(x,y)=>(y.added||"").localeCompare(x.added||""):(x,y)=>y.views-x.views);
+    $("#tb").innerHTML=l.length?l.map(s=>`<tr>
+      <td><b>${esc(s.title)}</b>${unknownChords(s.body).length?' <span title="Diyagramı olmayan akor var" style="color:#c58a10">⚠</span>':""}</td>
+      <td>${esc(artistName(s.artist))}</td><td><span class="kp">${esc(s.key||"")}</span></td>
+      <td><span class="diff ${s.diff}">${s.diff||""}</span></td><td>${fmt(s.views)}</td>
+      <td class="act"><a class="btn sm" href="sarki/${s.id}/" target="_blank">Gör</a> <a class="btn sm" href="#duzenle-${s.id}">Düzenle</a> <button class="btn sm danger" data-del="${s.id}">Sil</button></td></tr>`).join("")
+      :`<tr><td colspan="6" class="empty">Sonuç yok</td></tr>`;
+  };
+  ["fq","fa","fg","fs"].forEach(id=>$("#"+id).addEventListener("input",draw));
+  $("#tb").onclick=async e=>{
+    const id=e.target.dataset.del;if(!id)return;
+    const s=D.songs.find(x=>x.id===id);
+    if(await ask("Şarkıyı sil",`"${esc(s.title)}" kalıcı olarak silinecek.`)) {await run(()=>DB.deleteSong(id),"Şarkı silindi");draw()}
+  };
+  draw();
+}
+
+function unknownChords(body){
+  const set=new Set([...(body||"").matchAll(/\[([^\]]+)\]/g)].map(m=>m[1]));
+  return [...set].filter(c=>!shape(c));
+}
+
+/* chords-above-lyrics → inline converter */
+function isChordLine(l){
+  const t=l.trim().split(/\s+/).filter(Boolean);
+  return t.length>0 && t.every(x=>/^[A-G][#b]?(m|maj|min|dim|aug|sus|add)?\d*(sus\d|add\d)?(\/[A-G][#b]?)?$/.test(x));
+}
+function convertAbove(text){
+  const lines=text.replace(/\r/g,"").split("\n"),out=[];
+  for(let i=0;i<lines.length;i++){
+    const l=lines[i];
+    if(isChordLine(l)){
+      const next=lines[i+1];
+      const pos=[...l.matchAll(/\S+/g)].map(m=>({c:m[0],i:m.index}));
+      if(next!==undefined && next.trim() && !isChordLine(next)){
+        let s=next.padEnd(Math.max(next.length,...pos.map(p=>p.i)));
+        for(let k=pos.length-1;k>=0;k--) s=s.slice(0,pos[k].i)+"["+pos[k].c+"]"+s.slice(pos[k].i);
+        out.push(s.replace(/\s+$/,""));i++;
+      } else out.push(pos.map(p=>"["+p.c+"]").join(" "));
+    } else out.push(l);
+  }
+  return out.join("\n");
+}
+
+/* ---------- EDITOR ---------- */
+function editor(id){
+  const s=id?D.songs.find(x=>x.id===id):null;
+  if(id&&!s){$("#view").innerHTML=`<div class="empty">Şarkı bulunamadı. <a href="#sarkilar" style="color:var(--accent)">Listeye dön</a></div>`;return}
+  const v=s||{id:"",title:"",artist:(D.artists[0]||{}).id||"",key:"C",capo:0,diff:"Kolay",genre:"",views:0,strum:"↓ ↓↑ ↑↓↑",added:new Date().toISOString().slice(0,10),body:"#Giriş\n[C] [G] [Am] [F]\n#1. Kıta\n"};
+  const genres=[...new Set(D.songs.map(x=>x.genre).filter(Boolean))];
+  $("#view").innerHTML=`
+  <div class="top"><div><h1>${s?"Şarkıyı düzenle":"Yeni şarkı"}</h1><div class="sub"><a href="#sarkilar">← Şarkılar</a></div></div>
+    <div style="display:flex;gap:8px">${s?`<button class="btn danger" id="del">Sil</button>`:""}<button class="btn pri" id="save">Kaydet</button></div></div>
+  <div class="ed">
+    <form class="form" id="sf" onsubmit="return false">
+      <div class="row r2">
+        <label class="f">Şarkı adı *<input id="e_title" value="${esc(v.title)}" required></label>
+        <label class="f">Sanatçı * <span style="display:flex;gap:6px"><select id="e_artist">${[...D.artists].sort((a,b)=>trSort(a.name,b.name)).map(a=>`<option value="${a.id}" ${a.id===v.artist?"selected":""}>${esc(a.name)}</option>`).join("")}</select><button type="button" class="btn sm" id="newart" title="Yeni sanatçı" style="height:40px">+</button></span></label>
+      </div>
+      <label class="f">Adres (slug) <input id="e_id" value="${esc(v.id)}" placeholder="otomatik oluşur"></label>
+      <div class="row r4">
+        <label class="f">Ton<select id="e_key">${KEYS.map(k=>`<option ${k===v.key?"selected":""}>${k}</option>`).join("")}</select></label>
+        <label class="f">Capo<select id="e_capo">${[0,1,2,3,4,5,6,7].map(n=>`<option value="${n}" ${n==v.capo?"selected":""}>${n?n+". perde":"Yok"}</option>`).join("")}</select></label>
+        <label class="f">Seviye<select id="e_diff">${DIFFS.map(d=>`<option ${d===v.diff?"selected":""}>${d}</option>`).join("")}</select></label>
+        <label class="f">Tür<input id="e_genre" list="gl" value="${esc(v.genre||"")}"><datalist id="gl">${genres.map(g=>`<option>${esc(g)}</option>`).join("")}</datalist></label>
+      </div>
+      <div class="row r3">
+        <label class="f">Ritim<input id="e_strum" value="${esc(v.strum||"")}"></label>
+        <label class="f">Görüntülenme<input value="${fmt(v.views)}" disabled title="Ziyaretlerle otomatik artar"></label>
+        <label class="f">Eklenme tarihi<input id="e_added" type="date" value="${v.added||""}"></label>
+      </div>
+      <div class="helper"><span class="lb">Ritim</span>${["↓","↑"," "].map(x=>`<button type="button" class="hb" data-st="${x}">${x===" "?"boşluk":x}</button>`).join("")}<button type="button" class="hb" data-st="⌫">⌫</button></div>
+      <div style="font-size:12px;font-weight:600;color:var(--muted)">Akorlu sözler — akoru <code>[Am]</code> şeklinde hecenin önüne yaz, bölüm başlığı <code>#Nakarat</code></div>
+      <div class="helper"><span class="lb">Bölüm</span>${SECTIONS.map(x=>`<button type="button" class="hb" data-sec="${x}">${x}</button>`).join("")}</div>
+      <div class="helper"><span class="lb">Akor</span>${QUICK.map(c=>`<button type="button" class="hb c" data-ch="${c}">${c}</button>`).join("")}<input id="cc" placeholder="özel" style="width:70px;height:28px;padding:0 8px;font-size:12px"><button type="button" class="hb" id="ccadd">ekle</button></div>
+      <textarea class="body" id="e_body" spellcheck="false">${esc(v.body||"")}</textarea>
+      <div class="warn" id="warn"></div>
+      <div class="helper"><button type="button" class="btn sm" id="conv">Akor-üstte formatını dönüştür</button><span style="font-size:12px;color:var(--muted)">Akorların ayrı satırda, sözlerin üstünde olduğu metni yapıştırıp bas.</span></div>
+    </form>
+    <div class="prev">
+      <div class="ph"><span>Canlı önizleme</span><span id="pkey"></span></div>
+      <h2 id="ptitle"></h2><div class="pa" id="partist"></div>
+      <div class="used" id="pused"></div>
+      <div class="lyrics" id="plyr"></div>
+    </div>
+  </div>`;
+  const ta=$("#e_body");
+  let slugTouched=!!s;
+  $("#e_id").addEventListener("input",()=>slugTouched=true);
+  const preview=()=>{
+    $("#ptitle").textContent=$("#e_title").value||"Şarkı adı";
+    $("#partist").textContent=artistName($("#e_artist").value);
+    $("#pkey").textContent="Ton: "+$("#e_key").value+($("#e_capo").value>0?" · Capo "+$("#e_capo").value:"");
+    const {html,used}=renderLyrics(ta.value,0);
+    $("#plyr").innerHTML=html;
+    $("#pused").innerHTML=used.map(c=>chordCard(c)).join("")||'<span style="color:var(--muted);font-size:13px">Henüz akor yok</span>';
+    const u=unknownChords(ta.value);
+    $("#warn").className="warn"+(u.length?" show":"");
+    $("#warn").textContent=u.length?"Bu akorların diyagramı yok (sitede yine görünür): "+u.join(", "):"";
+    if(!slugTouched) $("#e_id").value=slugify($("#e_title").value);
+  };
+  $("#sf").addEventListener("input",preview);
+  preview();
+  const insert=(txt)=>{
+    const a=ta.selectionStart,b=ta.selectionEnd;
+    ta.value=ta.value.slice(0,a)+txt+ta.value.slice(b);
+    ta.focus();ta.selectionStart=ta.selectionEnd=a+txt.length;preview();
+  };
+  $("#sf").addEventListener("click",e=>{
+    const t=e.target;
+    if(t.dataset.ch) insert("["+t.dataset.ch+"]");
+    else if(t.dataset.sec){const pre=ta.selectionStart&&ta.value[ta.selectionStart-1]!=="\n"?"\n":"";insert(pre+"#"+t.dataset.sec+"\n")}
+    else if(t.dataset.st){const i=$("#e_strum");i.value=t.dataset.st==="⌫"?i.value.slice(0,-1):i.value+t.dataset.st;preview()}
+  });
+  $("#ccadd").onclick=()=>{const c=$("#cc").value.trim();if(c){insert("["+c+"]");$("#cc").value=""}};
+  $("#conv").onclick=()=>{ta.value=convertAbove(ta.value);preview();toast("Dönüştürüldü")};
+  $("#newart").onclick=()=>artistModal(null,newId=>{
+    $("#e_artist").innerHTML=[...D.artists].sort((a,b)=>trSort(a.name,b.name)).map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join("");
+    $("#e_artist").value=newId;preview();
+  });
+  $("#save").onclick=async()=>{
+    const title=$("#e_title").value.trim();
+    const nid=slugify($("#e_id").value||title);
+    if(!title) return toast("Şarkı adı gerekli",true);
+    if(!$("#e_artist").value) return toast("Önce bir sanatçı ekle",true);
+    if(!nid) return toast("Geçerli bir adres gir",true);
+    if(nid!==id && D.songs.some(x=>x.id===nid)) return toast("Bu adres başka şarkıda kullanılıyor",true);
+    const song={id:nid,title,artist:$("#e_artist").value,key:$("#e_key").value,capo:+$("#e_capo").value,diff:$("#e_diff").value,
+      genre:$("#e_genre").value.trim()||(D.artists.find(a=>a.id===$("#e_artist").value)||{}).genre||"",
+      strum:$("#e_strum").value.trim(),added:$("#e_added").value||new Date().toISOString().slice(0,10),body:ta.value.replace(/\r/g,"")};
+    if(await run(()=>DB.saveSong(song,id),"Kaydedildi ✓")){ if(nid!==id) location.hash="duzenle-"+nid; }
+  };
+  if(s) $("#del").onclick=async()=>{
+    if(await ask("Şarkıyı sil",`"${esc(s.title)}" kalıcı olarak silinecek.`)) {if(await run(()=>DB.deleteSong(id),"Şarkı silindi"))location.hash="sarkilar"}
+  };
+}
+
+/* ---------- ARTISTS ---------- */
+function artistsView(){
+  const list=[...D.artists].sort((a,b)=>trSort(a.name,b.name));
+  $("#view").innerHTML=`
+  <div class="top"><div><h1>Sanatçılar</h1><div class="sub">${list.length} sanatçı</div></div><button class="btn pri" id="add">+ Yeni sanatçı</button></div>
+  <div class="panel"><table><thead><tr><th>Sanatçı</th><th>Tür</th><th>Şarkı</th><th>Adres</th><th></th><th></th></tr></thead><tbody>
+  ${list.map(a=>{const n=D.songs.filter(s=>s.artist===a.id).length;return `<tr><td><span class="av" style="background:${a.color}">${esc(initials(a.name))}</span><b>${esc(a.name)}</b></td><td>${esc(a.genre||"")}</td><td>${n}</td><td style="color:var(--muted);font-family:'JetBrains Mono';font-size:12px">${a.id}</td><td></td>
+  <td class="act"><button class="btn sm" data-ed="${a.id}">Düzenle</button> <button class="btn sm danger" data-del="${a.id}">Sil</button></td></tr>`}).join("")||`<tr><td colspan="6" class="empty">Henüz sanatçı yok</td></tr>`}
+  </tbody></table></div>`;
+  $("#add").onclick=()=>artistModal(null,()=>artistsView());
+  $("#view").querySelector("tbody").onclick=async e=>{
+    const t=e.target;
+    if(t.dataset.ed) artistModal(t.dataset.ed,()=>artistsView());
+    if(t.dataset.del){
+      const n=D.songs.filter(s=>s.artist===t.dataset.del).length;
+      if(n) return toast(`Bu sanatçının ${n} şarkısı var, önce onları sil ya da taşı`,true);
+      if(await ask("Sanatçıyı sil",`"${esc(artistName(t.dataset.del))}" silinecek.`)){await run(()=>DB.deleteArtist(t.dataset.del),"Sanatçı silindi");artistsView()}
+    }
+  };
+}
+function artistModal(id,done){
+  const a=id?D.artists.find(x=>x.id===id):{id:"",name:"",genre:"",color:"#"+["2c6e8f","c2416b","3f4a3c","9a5b1e","3c5bd6","5b8a3a","7a3fb0"][Math.floor(Math.random()*7)]};
+  openModal(`<h3>${id?"Sanatçıyı düzenle":"Yeni sanatçı"}</h3>
+    <label class="f">Ad *<input id="a_name" value="${esc(a.name)}"></label>
+    <label class="f">Adres (slug)<input id="a_id" value="${esc(a.id)}" placeholder="otomatik"></label>
+    <div class="row r2"><label class="f">Tür<input id="a_genre" value="${esc(a.genre||"")}"></label><label class="f">Renk<input type="color" id="a_color" value="${a.color}"></label></div>
+    <div class="mact"><button class="btn" id="mno">Vazgeç</button><button class="btn pri" id="myes">Kaydet</button></div>`);
+  let touched=!!id;
+  $("#a_id").oninput=()=>touched=true;
+  $("#a_name").oninput=()=>{if(!touched)$("#a_id").value=slugify($("#a_name").value)};
+  $("#a_name").focus();
+  $("#mno").onclick=closeModal;
+  $("#myes").onclick=async()=>{
+    const name=$("#a_name").value.trim();const nid=slugify($("#a_id").value||name);
+    if(!name||!nid) return toast("Ad gerekli",true);
+    if(nid!==id&&D.artists.some(x=>x.id===nid)) return toast("Bu adres kullanılıyor",true);
+    const obj={id:nid,name,genre:$("#a_genre").value.trim(),color:$("#a_color").value};
+    if(await run(()=>DB.saveArtist(obj,id),"Sanatçı kaydedildi")){closeModal();done&&done(nid)}
+  };
+}
+
+/* ---------- MESSAGES ---------- */
+let MSGS=[];
+async function refreshBadge(){
+  try{MSGS=await DB.listMessages()}catch(e){MSGS=[]}
+  const n=MSGS.filter(m=>!m.is_read).length,b=$("#badge");
+  b.textContent=n;b.classList.toggle("show",n>0);
+}
+const TYPES={iletisim:"İletişim",telif:"Telif talebi",hata:"Hata bildirimi",oneri:"Şarkı önerisi"};
+async function messagesView(filter){
+  await refreshBadge();
+  const f=filter||"";
+  const list=MSGS.filter(m=>!f||(f==="okunmamis"?!m.is_read:m.type===f));
+  $("#view").innerHTML=`
+  <div class="top"><div><h1>Mesajlar</h1><div class="sub">${MSGS.length} mesaj · ${MSGS.filter(m=>!m.is_read).length} okunmamış</div></div></div>
+  <div class="filters"><select id="mf"><option value="">Tümü</option><option value="okunmamis">Okunmamış</option>${Object.entries(TYPES).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></div>
+  ${MSGS.some(m=>m.type==="telif"&&!m.is_read)?`<div class="warn show" style="margin-bottom:12px">Bekleyen telif talebi var. Haklı ise ilgili şarkıyı en kısa sürede kaldır ve talep sahibine e-postayla dönüş yap.</div>`:""}
+  <div id="ml">${list.length?list.map(m=>`<div class="msg ${m.is_read?"":"unread"}">
+    <div class="mh"><span class="tag ${m.type}">${TYPES[m.type]||m.type}</span><b>${esc(m.name)}</b><a href="mailto:${esc(m.email)}" style="color:var(--accent)">${esc(m.email)}</a><small>${new Date(m.created_at).toLocaleString("tr-TR")}</small></div>
+    ${m.subject?`<div><b>${esc(m.subject)}</b></div>`:""}
+    ${m.song_url?`<div style="font-size:13px;color:var(--muted)">İlgili: ${esc(m.song_url)}</div>`:""}
+    <div class="mb">${esc(m.body)}</div>
+    <div class="acts"><button class="btn sm" data-read="${m.id}" data-v="${m.is_read?0:1}">${m.is_read?"Okunmadı yap":"Okundu"}</button><button class="btn sm danger" data-mdel="${m.id}">Sil</button></div>
+  </div>`).join(""):`<div class="panel"><div class="empty">Mesaj yok</div></div>`}</div>`;
+  $("#mf").value=f;
+  $("#mf").onchange=e=>messagesView(e.target.value);
+  $("#ml").onclick=async e=>{
+    const t=e.target;
+    if(t.dataset.read){try{await DB.setRead(+t.dataset.read,t.dataset.v==="1")}catch(err){toast(err.message,true)}messagesView(f)}
+    if(t.dataset.mdel&&await ask("Mesajı sil","Bu mesaj kalıcı olarak silinecek.")){try{await DB.deleteMessage(+t.dataset.mdel);toast("Silindi")}catch(err){toast(err.message,true)}messagesView(f)}
+  };
+}
+
+/* ---------- BACKUP ---------- */
+function download(name,text,type){
+  const b=new Blob([text],{type});const u=URL.createObjectURL(b);
+  const a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),1000);
+}
+function dataJs(){
+  return `/* ---------- DATA ---------- */\n// Akorla admin panelinden ${new Date().toLocaleString("tr-TR")} tarihinde oluşturuldu\nconst DEFAULT_ARTISTS = ${JSON.stringify(D.artists,null,2)};\n\nconst DEFAULT_SONGS = ${JSON.stringify(D.songs,null,2)};\n`;
+}
+function backupView(){
+  $("#view").innerHTML=`
+  <div class="top"><div><h1>Yedekleme</h1><div class="sub">Verilerini dışa/içe aktar</div></div></div>
+  <div class="cards">
+    <div class="card"><h3>JSON yedeği indir</h3><p>Tüm sanatçılar ve şarkılar tek dosyada. Başka bir tarayıcıya ya da Supabase'e taşımak için.</p><div class="acts"><button class="btn pri" id="exj">İndir</button><button class="btn" id="cpj">Kopyala</button></div></div>
+    <div class="card"><h3>data.js olarak indir</h3><p>Yerel modda yaptığın değişiklikleri herkese yayınlamak için: indirdiğin dosyayı projedeki data.js ile değiştir, GitHub'a yükle.</p><div class="acts"><button class="btn pri" id="exd">data.js indir</button></div></div>
+    <div class="card"><h3>JSON içe aktar</h3><p>Yedek dosyasını yükle. Aynı adrese sahip kayıtların üstüne yazılır.</p><div class="acts"><label class="btn">Dosya seç<input type="file" id="imp" accept=".json,application/json" hidden></label></div></div>
+    ${DB.mode==="local"?`<div class="card"><h3>Varsayılana sıfırla</h3><p>Bu tarayıcıdaki değişiklikleri siler, data.js'teki verilere döner.</p><div class="acts"><button class="btn danger" id="rst">Sıfırla</button></div></div>`:""}
+  </div>`;
+  const json=()=>JSON.stringify({artists:D.artists,songs:D.songs},null,2);
+  $("#exj").onclick=()=>download("akorla-yedek-"+new Date().toISOString().slice(0,10)+".json",json(),"application/json");
+  $("#cpj").onclick=async()=>{try{await navigator.clipboard.writeText(json());toast("Panoya kopyalandı")}catch(e){toast("Kopyalanamadı",true)}};
+  $("#exd").onclick=()=>download("data.js",dataJs(),"text/javascript");
+  $("#imp").onchange=async e=>{
+    const f=e.target.files[0];if(!f)return;
+    try{
+      const d=JSON.parse(await f.text());
+      if(!Array.isArray(d.artists)||!Array.isArray(d.songs)) throw new Error("Geçersiz dosya: artists ve songs olmalı");
+      let merged=d;
+      if(DB.mode==="local"){
+        const m=(old,neu)=>[...old.filter(o=>!neu.some(n=>n.id===o.id)),...neu];
+        merged={artists:m(D.artists,d.artists),songs:m(D.songs,d.songs)};
+      }
+      await run(()=>DB.importAll(merged),`${d.songs.length} şarkı, ${d.artists.length} sanatçı aktarıldı`);
+    }catch(err){toast(err.message,true)}
+    e.target.value="";
+  };
+  if($("#rst")) $("#rst").onclick=async()=>{if(await ask("Sıfırla","Bu tarayıcıdaki tüm değişiklikler silinecek.","Sıfırla")){DB.resetLocal();await reload();toast("Sıfırlandı")}};
+}
+</script>
+</body>
+</html>
